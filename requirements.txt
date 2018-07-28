@@ -1,0 +1,11 @@
+pyramid
+pyramid_jinja2
+waitress
+uwsgi
+twilio
+sqlalchemy
+zope.sqlalchemy
+transaction
+apscheduler
+pdfminer2
+nexmo

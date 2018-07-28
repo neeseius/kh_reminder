@@ -30,7 +30,6 @@ kh_reminder.pem
 kh_reminder.sqlite
 production.ini
 pytest.ini
-requirements.txt
 uwsgi.ini
 setup.py
 .appdata
