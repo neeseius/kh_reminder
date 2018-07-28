@@ -1,0 +1,44 @@
+{% extends "ui_layout.jinja2" %}
+
+{% block body %}
+            <h1>Attendants</h1>
+            <a class="nav-link" href="/attendant/modify">Add Attendant</a></li>
+            <table class="table table-hover table-sm table-bordered">
+                <thead>
+                  <tr>
+                    <th>Lastname</th>
+                    <th>Firstname</th>
+                    <th>Email</th>
+                    <th>Email Alert</th>
+                    <th>Phone</th>
+                    <th>Phone Alert</th>
+
+                  </tr>
+                </thead>
+                {% for attendant in attendants %}
+                    <tr onclick="window.location.href = '/attendant/modify?id={{ attendant.id }}';">
+                        <td>
+                            {{ attendant.lname }}
+                        </td>
+                        <td>
+                            {{ attendant.fname }}
+                        </td>
+                        <td>
+                            {{ attendant.email }}
+                        </td>
+                        <td id="checkmark">
+                            {% if attendant.send_email == 1 %}&#10004;{% endif %}
+                        </td>
+                        <td>
+                            {{ attendant.phone }}
+                        </td>
+                        <td id="checkmark">
+                            {% if attendant.send_sms == 1 %}&#10004;{% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+
+            <script>
+
+{% endblock %}

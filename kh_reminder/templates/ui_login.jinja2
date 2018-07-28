@@ -1,0 +1,13 @@
+<html>
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+        <body>
+            <form method=POST action="/login">
+                <h1>Kingdom Hall Reminder</h1>
+                <input type="hidden" name="came_from" value="{{ came_from }}">
+                <input type=text name="username" placeholder="username" required /><br>
+                <input type=password name="password" placeholder="password" required /><br><br>
+                <button type=submit name=action value="login">login</button><br>
+            </form>
+            <h1>{{ result }}</h1>
+        </body>
+</html>

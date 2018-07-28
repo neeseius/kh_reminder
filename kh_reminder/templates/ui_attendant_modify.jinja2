@@ -1,0 +1,67 @@
+{% extends "ui_layout.jinja2" %}
+
+{% block body %}
+
+        <form  action="/attendant/modify" method=post>
+            {% if attendant %}
+                <h1>Modify Attendant</h1>
+                <fieldset>
+                        <input type=hidden name=came_from value="{{ came_from }}" />
+                        <input type=hidden name=id value="{{ attendant.id }}" />
+                    <div>
+                        <input type=text name=fname placeholder=Firstname value="{{ attendant.fname }}" />
+                    </div>
+                    <div>
+                        <input type=text name=lname placeholder=Lastname value="{{ attendant.lname }}" />
+                    </div>
+                    <div>
+                        <input type=text name=email placeholder=Email value="{{ attendant.email }}" />
+                    </div>
+                    <div>
+                        <input type=tel name=phone placeholder=Phone value="{{ attendant.phone }}" />
+                    </div>
+                    <br>
+                    <div>
+                        <h4>Alerting</h4>
+                            <div>
+                                <input type="checkbox" name="send_email" {% if attendant.send_email == 1 %}checked{% endif %}>Email
+                            </div>
+                            <div>
+                                <input type="checkbox" name="send_text" {% if attendant.send_sms == 1 %}checked{% endif %}>Text
+                            </div>
+                    </div>
+                    <button class="btn btn-success" type=submit name=action value="submit">Submit</button>
+                    <button class="btn btn-danger" type=submit name=action value="delete" style="margin-left: 80px;">Delete</button>
+                </fieldset>
+
+            {% else %}
+                <h1>Add Attendant</h1>
+                <fieldset>
+                    <div>
+                        <input type=text name=fname placeholder=Firstname />
+                    </div>
+                    <div>
+                        <input type=text name=lname placeholder=Lastname />
+                    </div>
+                    <div>
+                        <input type=text name=email placeholder=Email />
+                    </div>
+                    <div>
+                        <input type=tel name=phone placeholder="10 digit phone" />
+                    </div>
+                    <br>
+                    <div>
+                        <h4>Alerting</h4>
+                            <div>
+                                <input type="checkbox" name="send_email">Email
+                            </div>
+                            <div>
+                                <input type="checkbox" name="send_text">Text
+                            </div>
+                    </div>
+                    <button class="btn-success" type=submit name=action value="submit">Submit</button>
+                </fieldset>
+            {% endif %}
+        </form>
+
+{% endblock %}

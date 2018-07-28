@@ -1,0 +1,51 @@
+{% extends "ui_layout.jinja2" %}
+
+{% block body %}
+
+            <h1>Schedule</h1>
+            <form action="/schedule" method="post" accept-charset="utf-8" enctype="multipart/form-data">
+                <label for="pdf">Upload Schedule</label>
+                <input name="pdf" type="file" value="" />
+                <input type="submit" value="upload" />
+            </form>
+            <table class="table table-hover table-bordered table-sm">
+
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        {% for th in schedule.table_headers %}
+                            <th>
+                                {% for text in th.split('\n') %}
+                                    {{ text }}<br>
+                                {% endfor %}
+                            </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+
+                {% for table_row in schedule.table_rows %}
+                        <tr {% if table_row.date == next_date %} bgcolor="#ccc" {% endif %}>
+                            <td>
+                                {% for text in table_row.date_text.split('\n') %}
+                                    {{ text }}<br>
+                                {% endfor %}
+                            </td>
+                            {% for assgmt in table_row.assignments %}
+                                <td>
+                                {% for attendant in assgmt.attendant_text.split('\n') %}
+                                    {% if attendant.replace('-', '').strip() in attendants_in_db %}
+                                        {{ attendant }}<br>
+                                    {% else %}
+                                        <a id="missing" href="/attendant/modify?fullname={{ attendant.replace('-', '') }}">
+                                            {{ attendant }}
+                                        </a><br>
+                                    {% endif %}
+                                {% endfor %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                {% endfor %}
+
+            </table>
+            <a class="careful" href="/schedule?flush">Flush Schedule</a>
+{% endblock %}

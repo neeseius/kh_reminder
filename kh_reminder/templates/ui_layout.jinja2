@@ -1,0 +1,28 @@
+<html>
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <header>
+    </header>
+
+
+    <body>
+        <div class="container-fluid">
+
+            <div class="row" id="main">
+                <div class="col-lg-12 main" id="navbar">
+                    <ul class="nav nav-pills">
+                        <li><a class="nav-link" href="/schedule" {% if "schedule" in path %}id="selected"{% endif %}>Schedule</a></li>
+                        <li><a class="nav-link" href="/attendants" {% if "attendants" in path %}id="selected"{% endif %}>Attendants</a></li>
+                        <li><a class="nav-link" href="/login?action=logout" {% if "login" in path %}id="selected"{% endif %}>Logout</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-8 main" id="data">
+                    {% block body %}{% endblock %}
+                </div>
+
+            </div>
+        </div>
+    </body>
+
+</html>
