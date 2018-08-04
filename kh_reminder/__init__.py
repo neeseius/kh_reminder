@@ -29,7 +29,7 @@ def main(global_config, **settings):
     DBSession.configure(bind=engine)
     Base.metadata.bind = engine
 
-    authn_policy = AuthTktAuthenticationPolicy('441866cedb0248f014abbe0c0041689d', callback=acl, hashalg='sha512',
+    authn_policy = AuthTktAuthenticationPolicy(settings['authn.key'], callback=acl, hashalg='sha512',
                                                timeout=900, reissue_time=450)
 
     config = Configurator(settings=settings, root_factory=RootFactory)

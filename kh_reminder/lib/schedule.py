@@ -3,15 +3,13 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.converter import PDFPageAggregator
 from pdfminer.pdfpage import PDFPage
 from pdfminer.layout import LTTextBoxHorizontal
-from datetime import datetime
-import pickle
-import os
+from kh_reminder import models
+from datetime import datetime, timedelta
 
 rsrcmgr = PDFResourceManager()
 laparams = LAParams()
 device = PDFPageAggregator(rsrcmgr, laparams=laparams)
 interpreter = PDFPageInterpreter(rsrcmgr, device)
-thisdir = os.path.dirname(os.path.abspath(__file__))
 
 
 def get_date_from_el(date_el):
@@ -25,45 +23,68 @@ def get_date_from_el(date_el):
         return duty_date.replace(year=now.year)
 
 
-class TableRow:
-    def __init__(self, date_el, header_elements, elements):
-        self.date_el = date_el
-        self.date_text = date_el.get_text().strip()
-        self.date = get_date_from_el(date_el)
-        self.assignments = []
-        self._get_assignments(header_elements, elements)
+class Meeting:
+    @classmethod
+    def create_meeting(cls, date_el, header_elements, elements):
+        date_text = date_el.get_text().strip()
+        date = get_date_from_el(date_el)
+        assignments, assignment_types = cls._get_assignments(date, date_el, header_elements, elements)
+        cls._generate_meeting(date, date_text, assignments, assignment_types)
 
-    def _get_assignments(self, header_elements, elements):
+    def _get_assignments(date, date_el, header_elements, elements):
+        assignments = []
+        assignment_types = []
         for header_el in header_elements:
-            asgmt = Assignment(self.date_el, self.date, header_el, elements)
-            self.assignments.append(asgmt)
+            assignment_type = header_el.get_text().strip().replace('\n', ' ')
+            assignment_types.append(assignment_type)
+            assignments += Assignment.create_assignments(
+                    date_el, header_el, elements, assignment_type)
+        return assignments, assignment_types
+
+    def _generate_meeting(date, date_text, assignments, assignment_types):
+        meeting_type = date_text.split('\n')[1]
+        meeting = models.Meeting(
+                date = date,
+                meeting_type = meeting_type,
+                assignment_types = str.join(',', assignment_types))
+        meeting.assignments += assignments
+
+        conflict_meeting = models.DBSession.query(models.Meeting)\
+            .filter(models.Meeting.date == date.strftime('%F')).first()
+
+        if conflict_meeting:
+            for assignment in conflict_meeting.assignments:
+                models.DBSession.delete(assignment)
+            models.DBSession.delete(conflict_meeting)
+
+        models.DBSession.add(meeting)
 
 
 class Assignment:
-    def __init__(self, date_el, date, header_el, elements):
-        self.date_el = date_el
-        self.date = date
-        self.header_el = header_el
-        self.task_text = header_el.get_text().strip()
-        self.attendant_el = None
-        self.attendant_text = None
-        self.attendants = []
-        self.attendants_in_db = True
-        self._get_attendant(elements)
+    @classmethod
+    def create_assignments(cls, date_el, header_el, elements, assignment_type):
+        attendants = cls._get_attendants(date_el, header_el, elements)
+        assignments = cls._get_assignments(assignment_type, attendants)
+        return assignments
 
-    def _get_attendant(self, elements):
+    def _get_attendants(date_el, header_el, elements):
+        attendants = []
         for el in elements:
-            if self.header_el.is_hoverlap(el) and self.date_el.is_voverlap(el):
-                self.attendant_el = el
-                self.attendant_text = el.get_text().replace('2', '').strip()
-                self.attendants = self.attendant_text.replace('-', '').strip().split('\n')
-                break
+            if header_el.is_hoverlap(el) and date_el.is_voverlap(el):
+                attendant_el = el
+                attendant_text = el.get_text().replace('2', '').strip()
+                attendants = [attendant.replace('-', '').strip() for attendant in attendant_text.split('\n')]
+                return attendants
+
+    def _get_assignments(assignment_type, attendants):
+        assignments = []
+        for attendant in attendants:
+            assignment = models.Assignment(assignment_type, attendant)
+            assignments.append(assignment)
+        return assignments
 
 
-class Schedule:
-    table_headers = []
-    table_rows = []
-
+class PdfParser:
     @classmethod
     def parse(cls, document):
         elements = cls._get_elements(document)
@@ -71,9 +92,6 @@ class Schedule:
         cls.table_headers = [el.get_text().strip() for el in header_elements]
         date_elements = cls._get_date_elements(elements)
         cls._generate_schedule(date_elements, header_elements, elements)
-        with open(os.path.join(thisdir, '../.appdata'), 'wb') as appdata:
-            data = (cls.table_headers, cls.table_rows)
-            pickle.dump(data, appdata)
 
     @staticmethod
     def _get_elements(doc):
@@ -109,27 +127,26 @@ class Schedule:
         header_elements = sorted(header_elements, key=lambda e: e.x0)
         return header_elements
 
+    def _cleanup_schedule():
+        cutoff_date = (datetime.now() - timedelta(days=10))
+        for meeting in models.DBSession.query(models.Meeting).filter(models.Meeting.date < cutoff_date).all():
+            for assignment in meeting.assignments:
+                models.DBSession.delete(assignment)
+            models.DBSession.delete(meeting)
+
+
     @classmethod
     def _generate_schedule(cls, date_elements, header_elements, elements):
-        new_table_rows = []
+        cutoff_date = (datetime.now() - timedelta(days=10))
         for date_el in date_elements:
-            now = datetime.now()
             date = get_date_from_el(date_el)
-            query = filter(lambda row: row.date.strftime('%F') == date.strftime('%F'), cls.table_rows)
-            if len([*query]) == 0 and (now - date).days < 8:
-                table_row = TableRow(date_el, header_elements, elements)
-                new_table_rows.append(table_row)
-        cls.table_rows += new_table_rows
+            if (date > cutoff_date):
+                Meeting.create_meeting(date_el, header_elements, elements)
+
+        cls._cleanup_schedule()
+        models.DBSession.commit()
+
 
     @classmethod
     def flush(cls):
-        cls.table_headers = []
-        cls.table_rows = []
-        if os.path.exists(os.path.join(thisdir, '../.appdata')):
-            os.remove(os.path.join(thisdir, '../.appdata'))
-
-if os.path.exists(os.path.join(thisdir, '../.appdata')):
-    with open(os.path.join(thisdir, '../.appdata'), 'rb') as appdata:
-        table_headers, table_rows = pickle.load(appdata)
-        Schedule.table_headers = table_headers
-        Schedule.table_rows = table_rows
+        pass

@@ -11,7 +11,9 @@ from kh_reminder.models import (
 
 
 def main():
-    settings = get_appsettings('../development.ini')
+    thisdir = os.path.dirname(os.path.abspath(__file__))
+    ini = os.path.join(thisdir, os.path.pardir, os.path.pardir, 'development.ini')
+    settings = get_appsettings(ini)
     engine = engine_from_config(settings, 'sqlalchemy.')
     DBSession.configure(bind=engine)
     Base.metadata.create_all(engine)

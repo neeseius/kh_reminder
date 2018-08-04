@@ -1,7 +1,7 @@
 FROM python:3
 MAINTAINER Justin Neese
-COPY . /kh_reminder
-RUN pip install -r /kh_reminder/requirements.txt
-RUN pip install -e /kh_reminder
+COPY ./requirements.txt ./
+RUN pip install -r ./requirements.txt
+COPY ./entrypoint.sh /entrypoint.sh
 
-CMD ["pserve", "/kh_reminder/development.ini", "--reload"]
+ENTRYPOINT ["/entrypoint.sh"]
