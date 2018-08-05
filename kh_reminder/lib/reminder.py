@@ -2,7 +2,6 @@ from time import sleep
 from datetime import datetime
 from kh_reminder import nexmo_client, nexmo_number
 from kh_reminder.models import DBSession, Attendant
-from kh_reminder.lib.schedule import Schedule
 
 
 def send_email(attendant, body):
@@ -45,12 +44,12 @@ def send_reminders():
         Schedule.table_rows.remove(tbl_row)
 
     if table_row is not None:
-        for asgmt in table_row.assignments:
+        for assignment in table_row.assignments:
             date_text = table_row.date_text
-            task_text = asgmt.task_text
-            attendant_text = asgmt.attendant_text
+            task_text = assignment.task_text
+            attendant_text = assignment.attendant_text
 
-            for user in asgmt.attendants:
+            for user in assignment.attendants:
                 if len(user.split()) > 1:
                     fname, lname = user.split()[0:2]
                     if len(user.split()) == 3:

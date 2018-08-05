@@ -1,0 +1,58 @@
+{% extends "ui_layout.jinja2" %}
+
+{% block body %}
+
+            <h1>Modify Meeting</h1>
+            <table class="table table-hover table-bordered table-sm">
+
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        {% for th in meeting.assignment_types.split(',') %}
+                            <th>
+                                {% for text in th.split('\n') %}
+                                    {{ text }}<br>
+                                {% endfor %}
+                            </th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+
+                <tr>
+                    <td>
+                        {{ meeting.date }}<br>
+                        {{ meeting.meeting_type }}<br>
+                    </td>
+                    {% for meeting_type in meeting.assignment_types.split(',') %}
+                      <td>
+                      {% for assgmt in meeting.assignments %}
+                        {% if assgmt.assignment_type == meeting_type %}
+                            <a onclick="modifyName('{{ assgmt.attendant }}', '{{ assgmt.id }}')" href=#>
+                              {{ assgmt.attendant }}
+                            </a><br>
+                        {% endif %}
+                      {% endfor %}
+                      </td>
+                    {% endfor %}
+                </tr>
+
+            </table>
+
+            <form id="mod_form" method="POST" action="/schedule/modify">
+                <input type="hidden" name="meeting_id" value="{{ meeting.id }}">
+                <input type="hidden" name="name">
+                <input type="hidden" name="assignment_id">
+            </form>
+
+        <script>
+        function modifyName(name, assignment_id) {
+            var new_name = prompt("Modify Attendant", name);
+            var form = document.getElementById("mod_form");
+
+            form.name.value = new_name;
+            form.assignment_id.value = assignment_id;
+            form.submit()
+        }
+        </script>
+
+{% endblock %}

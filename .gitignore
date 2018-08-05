@@ -29,7 +29,4 @@ kh_reminder.cert
 kh_reminder.pem
 kh_reminder.sqlite
 production.ini
-pytest.ini
-uwsgi.ini
-setup.py
 .appdata

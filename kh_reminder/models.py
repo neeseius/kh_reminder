@@ -8,6 +8,7 @@ from pyramid.security import Allow
 DBSession = scoped_session(sessionmaker())
 Base = declarative_base()
 
+
 class Attendant(Base):
     __tablename__ = 'attendants'
     id = Column(Integer, nullable=False, primary_key=True)
@@ -32,7 +33,6 @@ class Meeting(Base):
     id = Column(Integer, nullable=False, primary_key=True)
     date = Column(Date, nullable=False)
     meeting_type = Column(Text, nullable=False)
-    #assignments = relationship("Assignment", back_populates="meeting")
     assignment_types = Column(Text, nullable=False)
     assignments = relationship("Assignment")
 
@@ -45,20 +45,17 @@ class Meeting(Base):
 class Assignment(Base):
     __tablename__ = 'assignments'
     id = Column(Integer, nullable=False, primary_key=True)
-    #date = Column(Date, nullable=False)
     assignment_type = Column(Text, nullable=False)
     attendant = Column(Text, nullable=False)
     meeting_id = Column(Integer, ForeignKey('meetings.id'))
-    #meeting = relationship("Meeting", back_populates="assignments")
 
-    #def __init__(self, date, assignment_type, attendant):
     def __init__(self,assignment_type, attendant):
-        #self.date = date
         self.assignment_type = assignment_type
         self.attendant = attendant
 
 
 class RootFactory(object):
-    __acl__ = [ (Allow, 'group:edit', 'edit') ]
+    __acl__ = [(Allow, 'group:edit', 'edit')]
+
     def __init__(self, request):
         pass

@@ -16,7 +16,7 @@
                   </tr>
                 </thead>
                 {% for attendant in attendants %}
-                    <tr onclick="window.location.href = '/attendant/modify?id={{ attendant.id }}';">
+                    <tr onclick="window.location.href = '/attendant/modify?attendant_id={{ attendant.id }}';">
                         <td>
                             {{ attendant.lname }}
                         </td>

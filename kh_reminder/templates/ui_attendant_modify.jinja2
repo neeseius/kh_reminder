@@ -4,7 +4,11 @@
 
         <form  action="/attendant/modify" method=post>
             {% if attendant %}
+              {% if exists %}
                 <h1>Modify Attendant</h1>
+              {% else %}
+                <h1>Add Attendant</h1>
+              {% endif %}
                 <fieldset>
                         <input type=hidden name=came_from value="{{ came_from }}" />
                         <input type=hidden name=id value="{{ attendant.id }}" />
@@ -31,7 +35,9 @@
                             </div>
                     </div>
                     <button class="btn btn-success" type=submit name=action value="submit">Submit</button>
-                    <button class="btn btn-danger" type=submit name=action value="delete" style="margin-left: 80px;">Delete</button>
+                    {% if exists %}
+                      <button class="btn btn-danger" type=submit name=action value="delete" style="margin-left: 80px;">Delete</button>
+                    {% endif %}
                 </fieldset>
 
             {% else %}

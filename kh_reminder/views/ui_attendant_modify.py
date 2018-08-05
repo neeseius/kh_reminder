@@ -1,6 +1,6 @@
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound
-from kh_reminder.models import Attendant, DBSession
+from kh_reminder.models import Attendant, Assignment, DBSession
 
 @view_config(route_name='attendant_modify', renderer='../templates/ui_attendant_modify.jinja2', permission='edit')
 def attendant_modify(request):
@@ -8,23 +8,36 @@ def attendant_modify(request):
     if not request.POST:
         came_from = '/' + '/'.join(request.referrer.split('?')[0].split('/')[3:])
         attendant = None
-        if 'id' in request.params:
-            _id = int(request.params.get('id'))
-            attendant = DBSession.query(Attendant).filter(Attendant.id == _id).first()
-        elif 'fullname' in request.params:
-            fullname = request.params.get('fullname')
-            fname, lname = fullname.split()[0:2]
+        attendant_exists = False
+        
+        # Coming from the attendants page or schedule page
+        if 'attendant_id' in request.params:
+            attendant_exists = True
+            attendant_id = int(request.params.get('attendant_id'))
+            attendant = DBSession.query(Attendant).filter(Attendant.id == attendant_id).first()
+
+        # Coming from the schedule page highlighted red
+        elif 'assignment_id' in request.params:
+            assignment_id = request.params.get("assignment_id")
+            assignment = DBSession.query(Assignment).filter(Assignment.id == assignment_id).first()
+            fullname = assignment.attendant
+            firstname, lastname = fullname.split()[0:2]
+            
             if len(fullname.split()) == 3:
                 suffix = fullname.split()[2]
-                lname += ' ' + suffix
-            attendant = Attendant(fname=fname, lname=lname)
+                lastname += ' ' + suffix
+            
+            attendant = Attendant(fname=firstname, lname=lastname)
 
-        return {'came_from': came_from, 'attendant': attendant, 'path': request.path_info}
+        return {'came_from': came_from,
+                'attendant': attendant,
+                'exists': attendant_exists,
+                'path': request.path_info}
 
     # Adding or modifying attendant after clicking submit
     else:
         came_from = request.params.get('came_from', '/attendants')
-        _id = request.params.get('id')
+        attendant_id = request.params.get('id')
         firstname = request.params.get('fname')
         lastname = request.params.get('lname')
         email = request.params.get('email')
@@ -32,9 +45,9 @@ def attendant_modify(request):
         send_email = 1 if request.params.get('send_email') == 'on' else 0
         send_text = 1 if request.params.get('send_text') == 'on' else 0
 
-        if _id and _id.isnumeric():
-            _id = int(_id)
-            attendant = DBSession.query(Attendant).filter(Attendant.id == _id).first()
+        if attendant_id and attendant_id.isnumeric():
+            attendant_id = int(attendant_id)
+            attendant = DBSession.query(Attendant).filter(Attendant.id == attendant_id).first()
 
             if request.params.get('action') == 'delete':
                 DBSession.delete(attendant)
@@ -49,12 +62,12 @@ def attendant_modify(request):
 
         else:
             attendant = Attendant(
-                    fname = firstname,
-                    lname = lastname,
-                    email = email,
-                    phone = phone,
-                    send_email = send_email,
-                    send_sms = send_text)
+                    fname=firstname,
+                    lname=lastname,
+                    email=email,
+                    phone=phone,
+                    send_email=send_email,
+                    send_sms=send_text)
 
             DBSession.add(attendant)
 

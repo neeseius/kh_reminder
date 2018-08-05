@@ -40,6 +40,7 @@ def main(global_config, **settings):
     config.add_static_view(name='static', path='static')
     config.add_route('login', '/login')
     config.add_route('schedule', '/schedule')
+    config.add_route('schedule_modify', '/schedule/modify')
     config.add_route('attendants', '/attendants')
     config.add_route('attendant_modify', '/attendant/modify')
 

@@ -12,7 +12,7 @@
 
                 <thead>
                     <tr>
-                        <th>Date</th>
+                        <th></th>
                         {% for th in assignment_types %}
                             <th>
                                 {% for text in th.split('\n') %}
@@ -26,18 +26,22 @@
                 {% for meeting in meetings %}
                         <tr {% if meeting.date == next_date %} bgcolor="#ccc" {% endif %}>
                             <td>
-                                {{ meeting.date }}<br>
-                                {{ meeting.meeting_type }}<br>
+                                <a href="/schedule/modify?meeting_id={{ meeting.id }}">
+                                  {{ meeting.date.strftime("%B %d") }}<br>
+                                  {{ meeting.meeting_type }}<br>
+                                </a>
                             </td>
                             {% for meeting_type in meeting.assignment_types.split(',') %}
                               <td>
-                              {% for assgmt in meeting.assignments %}
-                                {% if assgmt.assignment_type == meeting_type %}
-                                  {% if assgmt.attendant in attendants_in_db %}
-                                    {{ assgmt.attendant }}<br>
+                              {% for assignment in meeting.assignments %}
+                                {% if assignment.assignment_type in meeting_type %}
+                                  {% if assignment.attendant in attendants %}
+                                    <a href="/attendant/modify?attendant_id={{ attendants[assignment.attendant] }}">
+                                      {{ assignment.attendant }}
+                                    </a><br>
                                   {% else %}
-                                    <a id="missing" href="/attendant/modify?fullname={{ assgmt.attendant }}">
-                                      {{ assgmt.attendant }}
+                                    <a id="missing" href="/attendant/modify?assignment_id={{ assignment.id }}">
+                                      {{ assignment.attendant }}
                                     </a><br>
                                   {% endif %}
                                 {% endif %}
