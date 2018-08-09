@@ -5,8 +5,22 @@ from sqlalchemy.orm import relationship
 from pyramid.security import Allow
 
 
-DBSession = scoped_session(sessionmaker())
+engine = {}
 Base = declarative_base()
+DBSession = None
+
+def define_engine(passphrase):
+    #engine["engine"].url.password = passphrase
+    #try:
+    tmp_DBSession = scoped_session(sessionmaker())
+    #print(engine["engine"].url)
+    tmp_DBSession.configure(bind=engine["engine"])
+    print(tmp_DBSession.query(Authenticate).first().id)
+        #return True
+    #except:
+        #return False
+    #DBSession = scoped_session(sessionmaker())
+    #DBSession.configure(bind=engine)
 
 
 class Attendant(Base):
@@ -52,6 +66,14 @@ class Assignment(Base):
     def __init__(self,assignment_type, attendant):
         self.assignment_type = assignment_type
         self.attendant = attendant
+
+
+class Authenticate(Base):
+    __tablename__ = 'authenticate'
+    id = Column(Integer, nullable=False, primary_key=True)
+
+    def __init__(self):
+        pass
 
 
 class RootFactory(object):

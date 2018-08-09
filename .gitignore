@@ -30,3 +30,4 @@ kh_reminder.pem
 kh_reminder.sqlite
 production.ini
 .appdata
+pysqlcipher3/
