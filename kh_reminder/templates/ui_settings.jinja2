@@ -1,0 +1,28 @@
+{% extends "ui_layout.jinja2" %}
+
+{% block body %}
+
+        <form  action="/settings" method=post>
+                <h1>Settings</h1><br>
+                <h4>Administrator Username and Password</h4>
+                <fieldset>
+                    <div>
+                        <input type=text name=username placeholder="Administrator" value="{{ username }}" required />
+                    </div>
+                    <div>
+                        <input type=password name=password1 placeholder="Password" />
+                    </div>
+                    <div>
+                        <input type=password name=password2 placeholder="Repeat Password" />
+                    </div>
+                    <br>
+                    <button class="btn btn-success" type=submit name=action value="submit">Save</button>
+                </fieldset>
+        </form>
+	{% if error %}
+            <h1>{{ error }}</h1>
+        {% elif changed %}
+            <h1>Saved</h1>
+        {% endif %}
+
+{% endblock %}

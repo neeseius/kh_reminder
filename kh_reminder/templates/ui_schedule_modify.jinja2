@@ -26,7 +26,7 @@
                     {% for meeting_type in meeting.assignment_types.split(',') %}
                       <td>
                       {% for assgmt in meeting.assignments %}
-                        {% if assgmt.assignment_type == meeting_type %}
+                        {% if assgmt.assignment_type in meeting_type %}
                             <a onclick="modifyName('{{ assgmt.attendant }}', '{{ assgmt.id }}')" href=#>
                               {{ assgmt.attendant }}
                             </a><br>
@@ -38,6 +38,10 @@
 
             </table>
 
+            {% if next_meeting %}
+                <a class="careful" href=# onclick="sendReminders('{{ meeting.id }}')" href=#>Send Reminders for this Meeting</a>
+            {% endif %}
+
             <form id="mod_form" method="POST" action="/schedule/modify">
                 <input type="hidden" name="meeting_id" value="{{ meeting.id }}">
                 <input type="hidden" name="name">
@@ -45,14 +49,35 @@
             </form>
 
         <script>
-        function modifyName(name, assignment_id) {
-            var new_name = prompt("Modify Attendant", name);
-            var form = document.getElementById("mod_form");
+            function modifyName(name, assignment_id) {
+                var new_name = prompt("Modify Attendant", name);
 
-            form.name.value = new_name;
-            form.assignment_id.value = assignment_id;
-            form.submit()
-        }
+                if (new_name == null) {
+                    return;
+                }
+
+                var form = document.getElementById("mod_form");
+                form.name.value = new_name;
+                form.assignment_id.value = assignment_id;
+                form.submit();
+            }
+
+            function sendReminders(meeting_id) {
+                var xhr = new XMLHttpRequest();
+
+                xhr.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                        var response = JSON.parse(xhr.responseText);
+                        alert(response.status);
+                    }
+                }
+
+                data = {"meeting_id": meeting_id};
+
+                xhr.open('POST', '/notify', true);
+                xhr.setRequestHeader("Content-Type", "application/json");
+                xhr.send(JSON.stringify(data));
+            }
         </script>
 
 {% endblock %}

@@ -9,3 +9,4 @@ transaction
 apscheduler
 pdfminer2
 nexmo
+pysqlcipher3

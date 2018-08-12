@@ -1,6 +1,8 @@
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound
-from kh_reminder.models import Attendant, Assignment, DBSession
+from kh_reminder.models import Attendant, Assignment
+from kh_reminder.lib.dbsession import Session
+
 
 @view_config(route_name='attendant_modify', renderer='../templates/ui_attendant_modify.jinja2', permission='edit')
 def attendant_modify(request):
@@ -14,12 +16,12 @@ def attendant_modify(request):
         if 'attendant_id' in request.params:
             attendant_exists = True
             attendant_id = int(request.params.get('attendant_id'))
-            attendant = DBSession.query(Attendant).filter(Attendant.id == attendant_id).first()
+            attendant = Session.DBSession.query(Attendant).filter(Attendant.id == attendant_id).first()
 
         # Coming from the schedule page highlighted red
         elif 'assignment_id' in request.params:
             assignment_id = request.params.get("assignment_id")
-            assignment = DBSession.query(Assignment).filter(Assignment.id == assignment_id).first()
+            assignment = Session.DBSession.query(Assignment).filter(Assignment.id == assignment_id).first()
             fullname = assignment.attendant
             firstname, lastname = fullname.split()[0:2]
             
@@ -47,10 +49,10 @@ def attendant_modify(request):
 
         if attendant_id and attendant_id.isnumeric():
             attendant_id = int(attendant_id)
-            attendant = DBSession.query(Attendant).filter(Attendant.id == attendant_id).first()
+            attendant = Session.DBSession.query(Attendant).filter(Attendant.id == attendant_id).first()
 
             if request.params.get('action') == 'delete':
-                DBSession.delete(attendant)
+                Session.DBSession.delete(attendant)
 
             else:
                 attendant.fname = firstname
@@ -69,7 +71,7 @@ def attendant_modify(request):
                     send_email=send_email,
                     send_sms=send_text)
 
-            DBSession.add(attendant)
+            Session.DBSession.add(attendant)
 
-        DBSession.commit()
+        Session.DBSession.commit()
         return HTTPFound(location=came_from)

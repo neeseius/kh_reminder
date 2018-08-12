@@ -1,26 +1,11 @@
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Text, Integer, collate, Date, ForeignKey
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy import Column, Text, Integer, Date, ForeignKey
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 from pyramid.security import Allow
 
 
-engine = {}
 Base = declarative_base()
-DBSession = None
-
-def define_engine(passphrase):
-    #engine["engine"].url.password = passphrase
-    #try:
-    tmp_DBSession = scoped_session(sessionmaker())
-    #print(engine["engine"].url)
-    tmp_DBSession.configure(bind=engine["engine"])
-    print(tmp_DBSession.query(Authenticate).first().id)
-        #return True
-    #except:
-        #return False
-    #DBSession = scoped_session(sessionmaker())
-    #DBSession.configure(bind=engine)
 
 
 class Attendant(Base):
@@ -40,6 +25,10 @@ class Attendant(Base):
         self.phone = phone
         self.send_email = send_email
         self.send_sms = send_sms
+
+    @hybrid_property
+    def fullname(self):
+        return self.fname + " " + self.lname
 
 
 class Meeting(Base):
@@ -68,12 +57,12 @@ class Assignment(Base):
         self.attendant = attendant
 
 
-class Authenticate(Base):
-    __tablename__ = 'authenticate'
-    id = Column(Integer, nullable=False, primary_key=True)
+class Administrator(Base):
+    __tablename__ = 'administrator'
+    username = Column(Text, nullable=False, primary_key=True)
 
-    def __init__(self):
-        pass
+    def __init__(self, username):
+        self.username = username
 
 
 class RootFactory(object):

@@ -2,7 +2,7 @@
 
 {% block body %}
 
-        <form  action="/attendant/modify" method=post>
+        <form action="/attendant/modify" method=post id=attendant_form>
             {% if attendant %}
               {% if exists %}
                 <h1>Modify Attendant</h1>
@@ -22,7 +22,8 @@
                         <input type=text name=email placeholder=Email value="{{ attendant.email }}" />
                     </div>
                     <div>
-                        <input type=tel name=phone placeholder=Phone value="{{ attendant.phone }}" />
+                        <input type=tel name=phone id=phone placeholder=Phone value="{{ attendant.phone }}" />
+                        <a onclick="test_sms();" href=#>send test sms</a>
                     </div>
                     <br>
                     <div>
@@ -34,9 +35,9 @@
                                 <input type="checkbox" name="send_text" {% if attendant.send_sms == 1 %}checked{% endif %}>Text
                             </div>
                     </div>
-                    <button class="btn btn-success" type=submit name=action value="submit">Submit</button>
+                      <button type=button class="btn btn-success" name=action value="submit" onclick="submit_form();">Submit</button>
                     {% if exists %}
-                      <button class="btn btn-danger" type=submit name=action value="delete" style="margin-left: 80px;">Delete</button>
+                      <button type=submit class="btn btn-danger" name=action value="delete" style="margin-left: 80px;">Delete</button>
                     {% endif %}
                 </fieldset>
 
@@ -53,7 +54,7 @@
                         <input type=text name=email placeholder=Email />
                     </div>
                     <div>
-                        <input type=tel name=phone placeholder="10 digit phone" />
+                        <input type=tel name=phone id=phone placeholder="10 digit phone" />
                     </div>
                     <br>
                     <div>
@@ -65,9 +66,54 @@
                                 <input type="checkbox" name="send_text">Text
                             </div>
                     </div>
-                    <button class="btn-success" type=submit name=action value="submit">Submit</button>
+                    <button type=button class="btn btn-success" name=action value="submit" onclick="submit_form();">Submit</button>
                 </fieldset>
             {% endif %}
         </form>
+
+        <script>
+            function validate_number(phone) {
+                if (phone.match(/^[0-9]{10}$/)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            function test_sms() {
+                phone = document.getElementById("phone").value;
+
+                if (!validate_number(phone)) {
+                    alert("invalid phone number");
+                    return;
+                }
+
+                var xhr = new XMLHttpRequest();
+
+                xhr.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                        var response = JSON.parse(xhr.responseText);
+                        alert(response.status);
+                    }
+                }
+
+                data = {"phone": phone};
+
+                xhr.open('POST', '/notify', true);
+                xhr.setRequestHeader("Content-Type", "application/json");
+                xhr.send(JSON.stringify(data));
+            }
+
+            function submit_form() {
+                form = document.getElementById("attendant_form");
+
+                if ((form.phone.value || form.send_text.checked) && !validate_number(form.phone.value)) {
+                    alert("invalid phone number");
+                    return;
+                }
+
+                form.submit();
+            }
+        </script>
 
 {% endblock %}

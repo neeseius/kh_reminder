@@ -1,5 +1,6 @@
-from kh_reminder.models import DBSession, Meeting, Assignment
+from kh_reminder.models import Meeting, Assignment
 from .datefromelement import date_from_element
+from .dbsession import Session
 
 
 class CreateMeeting:
@@ -23,16 +24,16 @@ class CreateMeeting:
 
         meeting.assignments += assignments
 
-        conflict_meeting = DBSession.query(Meeting) \
+        conflict_meeting = Session.DBSession.query(Meeting) \
             .filter(Meeting.date == date.strftime('%F')).first()
 
         if conflict_meeting:
             for assignment in conflict_meeting.assignments:
-                DBSession.delete(assignment)
+                Session.DBSession.delete(assignment)
 
-            DBSession.delete(conflict_meeting)
+            Session.DBSession.delete(conflict_meeting)
 
-        DBSession.add(meeting)
+        Session.DBSession.add(meeting)
 
     @classmethod
     def _get_assignments(cls, date_element, header_elements, elements):

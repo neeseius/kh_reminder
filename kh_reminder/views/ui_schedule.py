@@ -1,7 +1,8 @@
 from pyramid.view import view_config
 from kh_reminder.lib.schedule import Schedule
 from datetime import datetime, timedelta, date
-from kh_reminder.models import Attendant, Meeting, DBSession
+from kh_reminder.models import Attendant, Meeting
+from kh_reminder.lib.dbsession import Session
 
 
 @view_config(route_name='schedule', renderer='../templates/ui_schedule.jinja2', permission='edit')
@@ -23,11 +24,10 @@ def schedule(request):
     attendants = {}
 
     # Discover attendants that are in the database
-    for attendant in DBSession.query(Attendant).all():
-        full_name = f'{attendant.fname} {attendant.lname}'
-        attendants[full_name] = attendant.id
+    for attendant in Session.DBSession.query(Attendant).all():
+        attendants[attendant.fullname] = attendant.id
 
-    meetings = DBSession.query(Meeting).filter(Meeting.date > before_date).order_by(Meeting.date).all()
+    meetings = Session.DBSession.query(Meeting).filter(Meeting.date > before_date).order_by(Meeting.date).all()
 
     # Mark which meeting date is next
     today = datetime.now()

@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
-from kh_reminder.models import DBSession, Meeting
+from kh_reminder.models import Meeting
 from .datefromelement import date_from_element
 from .pdfparser import PdfParser
 from .meeting import CreateMeeting
+from .dbsession import Session
 
 class Schedule:
     @classmethod
@@ -19,7 +20,7 @@ class Schedule:
             if date > cutoff_date:
                 CreateMeeting.create_meeting(date_el, header_elements, elements)
 
-        DBSession.commit()
+        Session.DBSession.commit()
 
     @staticmethod
     def cleanup_schedule():
@@ -28,18 +29,18 @@ class Schedule:
         """
         cutoff_date = (datetime.now() - timedelta(days=10))
 
-        for meeting in DBSession.query(Meeting).filter(Meeting.date < cutoff_date).all():
+        for meeting in Session.DBSession.query(Meeting).filter(Meeting.date < cutoff_date).all():
             for assignment in meeting.assignments:
-                DBSession.delete(assignment)
+                Session.DBSession.delete(assignment)
 
-            DBSession.delete(meeting)
+            Session.DBSession.delete(meeting)
 
     @classmethod
     def flush_schedule(cls):
-        for meeting in DBSession.query(Meeting).all():
+        for meeting in Session.DBSession.query(Meeting).all():
             for assignment in meeting.assignments:
-                DBSession.delete(assignment)
+                Session.DBSession.delete(assignment)
 
-            DBSession.delete(meeting)
+            Session.DBSession.delete(meeting)
 
-        DBSession.commit()
+        Session.DBSession.commit()

@@ -26,7 +26,7 @@
                 {% for meeting in meetings %}
                         <tr {% if meeting.date == next_date %} bgcolor="#ccc" {% endif %}>
                             <td>
-                                <a href="/schedule/modify?meeting_id={{ meeting.id }}">
+                                <a href="/schedule/modify?meeting_id={{ meeting.id }}{% if meeting.date == next_date %}&next_meeting=true{% endif %}">
                                   {{ meeting.date.strftime("%B %d") }}<br>
                                   {{ meeting.meeting_type }}<br>
                                 </a>
@@ -39,6 +39,9 @@
                                     <a href="/attendant/modify?attendant_id={{ attendants[assignment.attendant] }}">
                                       {{ assignment.attendant }}
                                     </a><br>
+                                  {% elif "assembly" in assignment.attendant.lower() or "convention" in assignment.attendant.lower() %}
+                                      {{ assignment.attendant }}
+                                    <br>
                                   {% else %}
                                     <a id="missing" href="/attendant/modify?assignment_id={{ assignment.id }}">
                                       {{ assignment.attendant }}

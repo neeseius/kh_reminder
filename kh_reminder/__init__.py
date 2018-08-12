@@ -2,11 +2,12 @@ from pyramid.config import Configurator
 from sqlalchemy import engine_from_config
 from pyramid.authentication import AuthTktAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
-#from kh_reminder.models import Base, DBSession, RootFactory
-from kh_reminder.models import RootFactory, engine, define_engine
+from kh_reminder.models import RootFactory
+from kh_reminder.lib.dbsession import Session
 from threading import Lock
-import nexmo
+from kh_reminder.lib.notifications import Notify
 
+auth_lock = Lock()
 
 def acl(user, request):
     if user:
@@ -16,16 +17,10 @@ def acl(user, request):
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
-    global nexmo_client, nexmo_number, auth_lock
-    Settings = settings
+    Notify.initialize_nexmo_client(settings)
 
-    auth_lock = Lock()
-
-    nexmo_number = settings['nexmo.number']
-    nexmo_client = nexmo.Client(key=settings['nexmo.key'],
-                 secret=settings['nexmo.secret'])
-
-    engine["engine"] = engine_from_config(settings, 'sqlalchemy.')
+    engine = engine_from_config(settings, 'sqlalchemy.')
+    Session.engine_object = engine
 
     authn_policy = AuthTktAuthenticationPolicy(settings['authn.key'], callback=acl, hashalg='sha512',
                                                timeout=900, reissue_time=450)
@@ -41,6 +36,8 @@ def main(global_config, **settings):
     config.add_route('schedule_modify', '/schedule/modify')
     config.add_route('attendants', '/attendants')
     config.add_route('attendant_modify', '/attendant/modify')
+    config.add_route('settings', '/settings')
+    config.add_route('notify', '/notify')
 
     config.scan()
 
