@@ -31,6 +31,14 @@ td, th {
     background-color:  #e1e1e1;
 }
 
+#present{
+    color: black;
+}
+
+#present:hover{
+    color: #333333;
+}
+
 #missing{
     color: #da1b1b;
 }

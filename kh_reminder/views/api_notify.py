@@ -4,8 +4,8 @@ from kh_reminder.lib.dbsession import Session
 from kh_reminder.models import Administrator, Meeting
 
 
-@view_config(route_name='notify', renderer='json', permission='edit')
-def notify(request):
+@view_config(route_name='notify_api', renderer='json', permission='edit')
+def notify_api(request):
     data = request.json_body
 
     if "phone" in data:

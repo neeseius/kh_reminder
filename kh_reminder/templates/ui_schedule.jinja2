@@ -36,7 +36,7 @@
                               {% for assignment in meeting.assignments %}
                                 {% if assignment.assignment_type in meeting_type %}
                                   {% if assignment.attendant in attendants %}
-                                    <a href="/attendant/modify?attendant_id={{ attendants[assignment.attendant] }}">
+                                    <a id="present" href="/attendant/modify?attendant_id={{ attendants[assignment.attendant] }}">
                                       {{ assignment.attendant }}
                                     </a><br>
                                   {% elif "assembly" in assignment.attendant.lower() or "convention" in assignment.attendant.lower() %}

@@ -1,6 +1,6 @@
 from kh_reminder.models import Meeting, Assignment
-from .datefromelement import date_from_element
 from .dbsession import Session
+from . import date_from_element
 
 
 class CreateMeeting:

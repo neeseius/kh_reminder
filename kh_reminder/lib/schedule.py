@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from kh_reminder.models import Meeting
-from .datefromelement import date_from_element
+from . import date_from_element
 from .pdfparser import PdfParser
 from .meeting import CreateMeeting
 from .dbsession import Session

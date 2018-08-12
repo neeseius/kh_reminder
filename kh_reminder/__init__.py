@@ -34,10 +34,11 @@ def main(global_config, **settings):
     config.add_route('login', '/login')
     config.add_route('schedule', '/schedule')
     config.add_route('schedule_modify', '/schedule/modify')
+    config.add_route('schedule_modify_api', '/schedule/modify_api')
     config.add_route('attendants', '/attendants')
     config.add_route('attendant_modify', '/attendant/modify')
+    config.add_route('notify_api', '/notify_api')
     config.add_route('settings', '/settings')
-    config.add_route('notify', '/notify')
 
     config.scan()
 
