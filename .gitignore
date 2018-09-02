@@ -28,6 +28,7 @@ venv/
 kh_reminder.cert
 kh_reminder.pem
 kh_reminder.sqlite
+kh_reminder.log
 production.ini
 .appdata
 pysqlcipher3/
