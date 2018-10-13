@@ -1,5 +1,6 @@
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy import create_engine
+from sqlalchemy.pool import NullPool
 from kh_reminder.models import Administrator
 from pysqlcipher3 import dbapi2 as sqlcipher
 
@@ -12,7 +13,7 @@ class Session:
 
     @classmethod
     def set_engine(cls):
-        cls.engine = create_engine(cls.engine_object.url)
+        cls.engine = create_engine(cls.engine_object.url, poolclass=NullPool)
 
     @classmethod
     def set_dbsession(cls):
@@ -32,7 +33,7 @@ class Session:
 
     @classmethod
     def authenticate(cls, username, password):
-        engine_object = create_engine(cls.engine_object.url)
+        engine_object = create_engine(cls.engine_object.url, poolclass=NullPool)
         engine_object.url.password = password
         engine = create_engine(engine_object.url)
         Session = sessionmaker(bind=engine)
