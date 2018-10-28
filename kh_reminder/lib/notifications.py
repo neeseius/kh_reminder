@@ -51,7 +51,7 @@ class Notify:
         if not meeting:
             meeting = Session.DBSession.query(Meeting).filter(Meeting.date == tomorrow.strftime("%F")).first()
             if not meeting:
-                print("No meeting found for tomorrow, skipping alerts")
+                print(f"Skipping alerts for {now}")
                 return
 
         for assignment in meeting.assignments:

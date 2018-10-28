@@ -20,7 +20,6 @@ class PdfParser:
     def parse(cls, pdf_document):
         elements = cls._get_elements(pdf_document)
         header_elements = cls._get_header_elements(elements)
-        #table_headers = [el.get_text().strip() for el in header_elements]
         date_elements = cls._get_date_elements(elements)
         return date_elements, header_elements, elements
 
@@ -39,7 +38,7 @@ class PdfParser:
     def _get_date_elements(elements):
         date_elements = []
         for el in elements:
-            if 'Meeting' in el.get_text():
+            if 'Weekend' in el.get_text() or 'Midweek' in el.get_text():
                 date_elements.append(el)
         date_elements = sorted(date_elements, key=lambda e: e.y0, reverse=True)
         return date_elements

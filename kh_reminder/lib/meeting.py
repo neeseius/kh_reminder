@@ -42,12 +42,14 @@ class CreateMeeting:
 
         # Header element is the name of the assignment
         for header_el in header_elements:
-            assignment_type = header_el.get_text().strip()
+            assignment_type_raw = header_el.get_text().strip()
+            strip_chars = [2, "(", ")"]
+            assignment_type = str.join('', [char for char in assignment_type_raw if char not in strip_chars]).strip()
             assignment_types.append(assignment_type)
             attendants = cls._get_attendants_for_assignment(date_element, header_el, elements)
 
-            if '\n-' in assignment_type:
-                a_types = assignment_type.split('\n-')
+            if '\n' in assignment_type:
+                a_types = assignment_type.split('\n')
                 for index, attendant in enumerate(attendants):
                     assignment = Assignment(a_types[index], attendant)
                     assignments.append(assignment)
@@ -65,7 +67,9 @@ class CreateMeeting:
 
             # Intersection points on the schedule grid can be found via overlaps
             if header_element.is_hoverlap(element) and date_element.is_voverlap(element):
-                attendant_text = element.get_text().replace('2', '').strip()
+                text = element.get_text()
+                strip_chars = [2, "(", ")"]
+                attendant_text = str.join('', [char for char in text if char not in strip_chars]).strip()
                 attendants = []
 
                 # Some elements have multiple names in them
