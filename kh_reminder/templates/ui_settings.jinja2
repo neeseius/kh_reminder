@@ -15,14 +15,200 @@
                     <div>
                         <input type=password name=password2 placeholder="Repeat Password" />
                     </div>
-                    <br>
-                    <button class="btn btn-success" type=submit name=action value="submit">Save</button>
+                    <button class="btn btn-success" type=submit name=action value="submit">Update Password</button>
                 </fieldset>
         </form>
 	{% if error %}
-            <h1>{{ error }}</h1>
-        {% elif changed %}
-            <h1>Saved</h1>
-        {% endif %}
+        <h1>{{ error }}</h1>
+    {% elif changed %}
+        <h1>Saved</h1>
+    {% endif %}
+
+    <br>
+    <br>
+    <h4>Reminders</h4>
+
+    <select id="reminders" multiple="multiple" size=10 style="width: 500px;"></select>
+    <br>
+    <input class="btn btn-success" type="button" value="Add" onclick=addReminder(); />
+    <input class="btn btn-danger" type="button" value="Remove" onclick=deleteReminder(); />
+    <br>
+
+    at
+    <select id="at" name="at"></select>
+    send
+    <select id="msg_type" name="msg_type">
+        <option>text</option>
+        <option>email</option>
+        <option>text and email</option>
+    </select>
+    <select id="days" name="days"></select>
+    days
+    before
+    <select id="meeting" name="meeting">
+        <option>Any</option>
+        <option>Midweek</option>
+        <option>Weekend</option>
+    </select>
+    meeting
+
+
+    <script>
+
+        function padNum(pad, num) {
+            while (num.length < pad) {
+                num = '0' + num;
+            }
+            return num;
+        }
+
+        window.onload = function() {
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (this.readyState == 4) {
+                    if (xhr.status == 200) {
+                        var signatureBox = document.getElementById("signatureBox");
+                        console.log(xhr.responseText);
+                        signatureBox.value = xhr.responseText;
+                    } else {
+                        alert("Could not get signature");
+                    }
+                }
+            }
+            xhr.open('GET', '/api/settings/signature', true);
+            xhr.send();
+
+            var daysList = document.getElementById("days");
+            for (let n=0; n<30; n++) {
+                var option = document.createElement("option");
+                option.value = n;
+                option.innerHTML = n;
+                daysList.appendChild(option);
+            }
+
+            var atList = document.getElementById("at");
+            //for (let hr=6; hr<=22; hr++) {
+            for (let hr=10; hr<=10; hr++) {
+                newHr = padNum(2, hr.toString());
+
+                //for (let hhr=0; hhr<=30; hhr+=30) {
+                for (let hhr=5; hhr<=60; hhr+=1) {
+                    newHhr = padNum(2, hhr.toString());
+                    var option = document.createElement("option");
+                    option.value = newHr + ":" + newHhr;
+                    option.innerHTML = newHr + ":" + newHhr;
+                    atList.appendChild(option);
+                }
+            }
+
+            popReminders();
+        }
+
+        function popReminders() {
+            var xhr = new XMLHttpRequest();
+            xhr.responseType = 'json';
+            xhr.onreadystatechange = function() {
+                if (this.readyState == 4) {
+                    if (xhr.status == 200) {
+                        var remindersList = document.getElementById("reminders");
+                        for (let n=0; n < xhr.response.length; n++) {
+                            var reminderData = xhr.response[n];
+                            var reminder = document.createElement("option");
+                            reminder.id = reminderData.id;
+                            reminder.innerHTML = reminderData.item_string;
+                            remindersList.appendChild(reminder);
+                        }
+                    } else {
+                        alert("Could not get reminders");
+                    }
+                }
+            }
+            xhr.open('GET', '/api/reminders', true);
+            xhr.send();
+        }
+
+        function addReminder() {
+            var xhr = new XMLHttpRequest();
+            xhr.responseType = 'json';
+            var at = document.getElementById("at").value;
+            var msg_type = document.getElementById("msg_type").value;
+            var days = document.getElementById("days").value;
+            var meeting = document.getElementById("meeting").value;
+            var reminder = document.createElement("option");
+            xhr.onreadystatechange = function() {
+                if (this.readyState == 4) {
+                    var remindersList = document.getElementById("reminders");
+                    if (xhr.status == 200) {
+                        reminder.id = xhr.response.id;
+                        reminder.innerHTML = xhr.response.item_string;
+                        remindersList.appendChild(reminder);
+                    } else if (xhr.status == 204) {
+                        return;
+                    } else {
+                        alert("ERROR");
+                    }
+                }
+            }
+
+            data = {"at": at, "msg_type": msg_type, "days": days, "meeting": meeting}
+            xhr.open('POST', '/api/reminders/add', true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.send(JSON.stringify(data));
+        }
+
+        function deleteReminder() {
+            var remindersList = document.getElementById("reminders");
+            var index = remindersList.selectedIndex;
+            if (index < 0) {
+                return;
+            }
+            var id = remindersList.options[index].id;
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (this.readyState == 4) {
+                    if (xhr.status == 204) {
+                        remindersList.removeChild(remindersList[index]);
+                    } else {
+                        alert("ERROR");
+                    }
+                }
+            }
+            xhr.open('GET', '/api/reminders/del?id=' + id, true);
+            xhr.send();
+        }
+
+    </script>
+
+    <br>
+    <br>
+    <br>
+    <br>
+    <h4>Message Signature</h4>
+    <textarea id="signatureBox" rows="4" cols="50"></textarea>
+    <br>
+    <input class="btn btn-success" type="button" value="Update Signature" onclick=updateSignature(); />
+    <br>
+    <br>
+    <br>
+
+    <script>
+        function updateSignature() {
+            var newSignature = document.getElementById("signatureBox").value;
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (this.readyState == 4) {
+                    if (xhr.status == 204) {
+                        alert("Signature updated");
+                    } else {
+                        alert("Could not update signature");
+                    }
+                }
+            }
+            data = {"message": newSignature}
+            xhr.open('POST', '/api/settings/signature', true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.send(JSON.stringify(data));
+        }
+    </script>
 
 {% endblock %}

@@ -40,6 +40,7 @@ class Session:
         session = Session()
 
         auth_result = False
+        was_sealed = False
 
         try:
             session.query(Administrator).filter(Administrator.username == username).one()
@@ -53,10 +54,11 @@ class Session:
             session.close()
 
         if auth_result is True and cls.status == "sealed":
+            was_sealed = True
             cls.engine_object = engine
             cls.set_engine()
             cls.DBSession.close()
             cls.set_dbsession()
             cls.status = "unsealed"
 
-        return auth_result
+        return auth_result, was_sealed

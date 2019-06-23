@@ -1,8 +1,11 @@
-from kh_reminder.models import Attendant, Meeting
+from kh_reminder.models import Attendant, Meeting, Signature, Reminder
 from kh_reminder.lib.dbsession import Session
+from threading import Lock
 from time import sleep
 from datetime import datetime, timedelta
 import nexmo
+
+notification_lock = Lock()
 
 
 class Notify:
@@ -39,19 +42,23 @@ class Notify:
 
 
     @classmethod
-    def send_reminders(cls, meeting=None):
-        if Session.status == "sealed":
-            print("Database is sealed, skipping alerts")
-            return
-
+    def send_reminders(cls, reminder_id=None, meeting=None):
+        reminder = None
         now = datetime.now()
         today = datetime(year=now.year, month=now.month, day=now.day)
-        tomorrow = (today + timedelta(days=1))
+        target_date = None
 
         if not meeting:
-            meeting = Session.DBSession.query(Meeting).filter(Meeting.date == tomorrow.strftime("%F")).first()
+            reminder = Session.DBSession.query(Reminder).filter(Reminder.id == reminder_id).one()
+            target_date = (today + timedelta(days=reminder.days_delta))
+            if reminder.meeting == "Any":
+                meeting = Session.DBSession.query(Meeting).filter(Meeting.date == target_date.strftime("%F")).first()
+            else:
+                meeting = Session.DBSession.query(Meeting)\
+                    .filter(Meeting.date == target_date.strftime("%F"))\
+                    .filter(Meeting.meeting_type == reminder.meeting).first()
             if not meeting:
-                print(f"Skipping alerts for {now}")
+                print(f"no meeting found for reminder: {reminder.item_string}")
                 return
 
         for assignment in meeting.assignments:
@@ -66,12 +73,19 @@ class Notify:
                        f'Assignment: {assignment.assignment_type}\n'
                        f'Assignee: {attendant.fullname}')
 
-                if attendant.send_email == 1:
-                    cls.send_email(attendant, msg)
+                signature = Session.DBSession.query(Signature).one()
+                if signature.message != "":
+                    msg += f"\n\n\n{signature.message}"
 
-                if attendant.send_sms == 1:
-                    print(f'sending sms notification for {assignment.assignment_type} on {meeting.date}')
-                    cls.send_text(attendant=attendant, text=msg)
+                if (attendant.send_email == 1) and (not reminder or "email" in reminder.msg_type):
+                    print(f'sending email notification for {assignment.assignment_type} on {meeting.date}')
+                    with notification_lock:
+                        cls.send_email(attendant=attendant, body=msg)
+
+                if (attendant.send_sms == 1) and (not reminder or "text" in reminder.msg_type):
+                    print(f'sending text notification for {assignment.assignment_type} on {meeting.date}')
+                    with notification_lock:
+                        cls.send_text(attendant=attendant, text=msg)
 
             else:
                 print(f'No alert sent for {assignment.assignment_type} on {meeting.date}')

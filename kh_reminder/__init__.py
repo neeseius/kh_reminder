@@ -39,6 +39,10 @@ def main(global_config, **settings):
     config.add_route('attendant_modify', '/attendant/modify')
     config.add_route('notify_api', '/notify_api')
     config.add_route('settings', '/settings')
+    config.add_route('signature', '/api/settings/signature')
+    config.add_route('reminders', '/api/reminders')
+    config.add_route('reminders_add', '/api/reminders/add')
+    config.add_route('reminders_del', '/api/reminders/del')
 
     config.scan()
 

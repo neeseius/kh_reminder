@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
-from .notifications import Notify
 from apscheduler.schedulers.background import BackgroundScheduler
+import logging
+logging.basicConfig()
+logging.getLogger('apscheduler').setLevel(logging.DEBUG)
 
 
 def date_from_element(date_el):
@@ -21,5 +23,4 @@ def date_from_element(date_el):
 
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(Notify.send_reminders, trigger='cron', hour='19',  minute='0')
 scheduler.start()

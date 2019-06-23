@@ -29,7 +29,7 @@ def attendant_modify(request):
                 suffix = fullname.split()[2]
                 lastname += ' ' + suffix
             
-            attendant = Attendant(fname=firstname, lname=lastname)
+            attendant = Attendant(fname=firstname, lname=lastname, send_sms=1)
 
         return {'came_from': came_from,
                 'attendant': attendant,

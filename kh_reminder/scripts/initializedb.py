@@ -20,7 +20,9 @@ def main():
     db = sqlcipher.connect(engine.url.database)
     db.executescript("PRAGMA KEY='%s';" % password)
     db.execute("CREATE TABLE administrator (username text primary key);")
+    db.execute("CREATE TABLE signature (message text primary key);")
     db.execute(f"INSERT INTO administrator (username) values ('{username}');")
+    db.execute(f"INSERT INTO signature (message) values ('');")
     db.commit()
     db.close()
 

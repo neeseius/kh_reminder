@@ -56,6 +56,28 @@ class Assignment(Base):
         self.assignment_type = assignment_type
         self.attendant = attendant
 
+class Reminder(Base):
+    __tablename__ = 'reminders'
+    id = Column(Integer, nullable=False, primary_key=True)
+    hour = Column(Integer, nullable=False)
+    minute = Column(Integer, nullable=False)
+    meeting = Column(Text, nullable=False)
+    msg_type = Column(Text, nullable=False)
+    days_delta = Column(Integer, nullable=False)
+    item_string = Column(Text, nullable=False, unique=True)
+
+    def __init__(self, hour, minute, meeting, msg_type, days_delta):
+        self.hour = hour
+        self.minute = minute
+        self.meeting = meeting
+        self.msg_type = msg_type
+        self.days_delta = days_delta
+        self.item_string = ("at %s:%s send %s %s days before %s meeting"
+            % (str(hour).zfill(2), str(minute).zfill(2), msg_type, days_delta, meeting))
+
+class Signature(Base):
+    __tablename__ = 'signature'
+    message = Column(Text, nullable=False, primary_key=True)
 
 class Administrator(Base):
     __tablename__ = 'administrator'
