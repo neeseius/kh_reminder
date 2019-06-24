@@ -43,6 +43,7 @@ def main(global_config, **settings):
     config.add_route('reminders', '/api/reminders')
     config.add_route('reminders_add', '/api/reminders/add')
     config.add_route('reminders_del', '/api/reminders/del')
+    config.add_route('admin_contact', '/api/admin/contact')
 
     config.scan()
 

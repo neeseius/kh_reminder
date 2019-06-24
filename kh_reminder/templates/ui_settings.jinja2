@@ -2,22 +2,22 @@
 
 {% block body %}
 
-        <form  action="/settings" method=post>
-                <h1>Settings</h1><br>
-                <h4>Administrator Username and Password</h4>
-                <fieldset>
-                    <div>
-                        <input type=text name=username placeholder="Administrator" value="{{ username }}" required />
-                    </div>
-                    <div>
-                        <input type=password name=password1 placeholder="Password" />
-                    </div>
-                    <div>
-                        <input type=password name=password2 placeholder="Repeat Password" />
-                    </div>
-                    <button class="btn btn-success" type=submit name=action value="submit">Update Password</button>
-                </fieldset>
-        </form>
+    <form action="/settings" method=post>
+        <h1>Settings</h1><br>
+        <h4>Administrator Username and Password</h4>
+        <fieldset>
+            <div>
+                <input type=text name=username placeholder="Administrator" value="{{ username }}" required />
+            </div>
+            <div>
+                <input type=password name=password1 placeholder="Password" />
+            </div>
+            <div>
+                <input type=password name=password2 placeholder="Repeat Password" />
+            </div>
+            <button class="btn btn-success" type=submit name=action value="submit">Update Password</button>
+        </fieldset>
+    </form>
 	{% if error %}
         <h1>{{ error }}</h1>
     {% elif changed %}
@@ -26,8 +26,29 @@
 
     <br>
     <br>
-    <h4>Reminders</h4>
+    <h4>Admin Email Setting</h4>
+    <input id="admin_email" type=text name=admin_email placeholder="email" autocomplete="off" />
+    <br>
+    <input id="admin_email_password" type=password name=admin_email_password placeholder="email password" autocomplete="off" />
+    <br>
+    <input id="admin_email_smtp" type=text name=admin_email_smtp placeholder="smtp server" autocomplete="off" />
+    <br>
+    <input id="admin_can_email" type=text name=admin_can_email disabled />
+    <br>
+    <input class="btn btn-success" type="button" value="Update Email Settings" onclick=updateEmail(); />
+    <br>
+    <br>
+    <br>
 
+    <h4>Admin Phone</h4>
+    <input id="admin_phone" type=text name=admin_phone placeholder="phone" autocomplete="off" />
+    <br>
+    <input class="btn btn-success" type="button" value="Update Phone" onclick=updatePhone(); />
+
+    <br>
+    <br>
+    <br>
+    <h4>Reminders</h4>
     <select id="reminders" multiple="multiple" size=10 style="width: 500px;"></select>
     <br>
     <input class="btn btn-success" type="button" value="Add" onclick=addReminder(); />
@@ -53,7 +74,37 @@
     meeting
 
 
+
+    <br>
+    <br>
+    <br>
+    <br>
+    <h4>Message Signature</h4>
+    <textarea id="signatureBox" rows="4" cols="50"></textarea>
+    <br>
+    <input class="btn btn-success" type="button" value="Update Signature" onclick=updateSignature(); />
+    <br>
+    <br>
+    <br>
+
     <script>
+        function updateSignature() {
+            var newSignature = document.getElementById("signatureBox").value;
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if (this.readyState == 4) {
+                    if (xhr.status == 204) {
+                        alert("Signature updated");
+                    } else {
+                        alert("Could not update signature");
+                    }
+                }
+            }
+            data = {"message": newSignature}
+            xhr.open('POST', '/api/settings/signature', true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.send(JSON.stringify(data));
+        }
 
         function padNum(pad, num) {
             while (num.length < pad) {
@@ -87,12 +138,10 @@
             }
 
             var atList = document.getElementById("at");
-            //for (let hr=6; hr<=22; hr++) {
-            for (let hr=10; hr<=10; hr++) {
+            for (let hr=6; hr<=22; hr++) {
                 newHr = padNum(2, hr.toString());
 
-                //for (let hhr=0; hhr<=30; hhr+=30) {
-                for (let hhr=5; hhr<=60; hhr+=1) {
+                for (let hhr=0; hhr<60; hhr+=15) {
                     newHhr = padNum(2, hhr.toString());
                     var option = document.createElement("option");
                     option.value = newHr + ":" + newHhr;
@@ -102,6 +151,37 @@
             }
 
             popReminders();
+            popAdminInfo();
+        }
+
+        function updatePhone() {
+            var phone = document.getElementById("admin_phone").value;
+            payload = {"phone": phone};
+            xhrSendAdminUpdates(payload);
+        }
+
+        function updateEmail() {
+            var email = document.getElementById("admin_email").value;
+            var email_password = document.getElementById("admin_email_password").value;
+            var email_smtp = document.getElementById("admin_email_smtp").value;
+            payload = {"email": email, "email_password": email_password, "email_smtp": email_smtp};
+            alert("Please wait up to 60 seconds for response that says updated");
+            xhrSendAdminUpdates(payload);
+        }
+
+        function xhrSendAdminUpdates(payload) {
+            var xhr = new XMLHttpRequest();
+            xhr.responseType = 'json';
+            xhr.onreadystatechange = function() {
+                if (this.readyState == 4) {
+                    if (xhr.status == 200) {
+                        popAdminInfo();
+                        alert("updated");
+                    }
+                }
+            }
+            xhr.open('POST', '/api/admin/contact', true);
+            xhr.send(JSON.stringify(payload));
         }
 
         function popReminders() {
@@ -124,6 +204,33 @@
                 }
             }
             xhr.open('GET', '/api/reminders', true);
+            xhr.send();
+        }
+
+        function popAdminInfo() {
+            var xhr = new XMLHttpRequest();
+            xhr.responseType = 'json';
+            xhr.onreadystatechange = function() {
+                if (this.readyState == 4) {
+                    if (xhr.status == 200) {
+                        var admin_email = document.getElementById("admin_email");
+                        admin_email.value = xhr.response.admin_email;
+                        var admin_email_smtp = document.getElementById("admin_email_smtp");
+                        admin_email_smtp.value = xhr.response.admin_email_smtp;
+                        var admin_can_email = document.getElementById("admin_can_email");
+                        if (xhr.response.admin_can_email < 1) {
+                            admin_can_email.value = "Email Unverified";
+                        } else {
+                            admin_can_email.value = "Email Verified";
+                        }
+                        var admin_phone = document.getElementById("admin_phone");
+                        admin_phone.value = xhr.response.admin_phone;
+                    } else {
+                        alert("Could not get admin info");
+                    }
+                }
+            }
+            xhr.open('GET', '/api/admin/contact', true);
             xhr.send();
         }
 
@@ -177,38 +284,6 @@
             xhr.send();
         }
 
-    </script>
-
-    <br>
-    <br>
-    <br>
-    <br>
-    <h4>Message Signature</h4>
-    <textarea id="signatureBox" rows="4" cols="50"></textarea>
-    <br>
-    <input class="btn btn-success" type="button" value="Update Signature" onclick=updateSignature(); />
-    <br>
-    <br>
-    <br>
-
-    <script>
-        function updateSignature() {
-            var newSignature = document.getElementById("signatureBox").value;
-            var xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function() {
-                if (this.readyState == 4) {
-                    if (xhr.status == 204) {
-                        alert("Signature updated");
-                    } else {
-                        alert("Could not update signature");
-                    }
-                }
-            }
-            data = {"message": newSignature}
-            xhr.open('POST', '/api/settings/signature', true);
-            xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.send(JSON.stringify(data));
-        }
     </script>
 
 {% endblock %}

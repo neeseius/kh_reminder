@@ -3,7 +3,7 @@ from pysqlcipher3 import dbapi2 as sqlcipher
 from sqlalchemy import create_engine, engine_from_config
 from pyramid.paster import get_appsettings
 from sqlalchemy.orm import scoped_session, sessionmaker
-from kh_reminder.models import Base
+from kh_reminder.models import Base, Signature, Administrator
 import os
 
 
@@ -19,10 +19,10 @@ def main():
 
     db = sqlcipher.connect(engine.url.database)
     db.executescript("PRAGMA KEY='%s';" % password)
-    db.execute("CREATE TABLE administrator (username text primary key);")
-    db.execute("CREATE TABLE signature (message text primary key);")
-    db.execute(f"INSERT INTO administrator (username) values ('{username}');")
-    db.execute(f"INSERT INTO signature (message) values ('');")
+    #db.execute("CREATE TABLE administrator (username text primary key);")
+    #db.execute("CREATE TABLE signature (message text primary key);")
+    #db.execute(f"INSERT INTO administrator (username) values ('{username}');")
+    #db.execute(f"INSERT INTO signature (message) values ('');")
     db.commit()
     db.close()
 
@@ -34,6 +34,14 @@ def main():
     DBSession.configure(bind=engine)
 
     Base.metadata.create_all(engine)
+
+    admin = Administrator(username=username)
+    DBSession.add(admin)
+
+    sig = Signature(message = "")
+    DBSession.add(sig)
+
+    DBSession.commit()
 
 
 if __name__ == '__main__':

@@ -82,9 +82,18 @@ class Signature(Base):
 class Administrator(Base):
     __tablename__ = 'administrator'
     username = Column(Text, nullable=False, primary_key=True)
+    email = Column(Text, nullable=True)
+    email_password = Column(Text, nullable=True)
+    email_smtp = Column(Text, nullable=True)
+    can_email = Column(Integer, nullable=True)
+    phone = Column(Text, nullable=True)
 
     def __init__(self, username):
         self.username = username
+        self.email = ""
+        self.email_password = ""
+        self.can_email = 0
+        self.phone = ""
 
 
 class RootFactory(object):
