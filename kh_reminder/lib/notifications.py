@@ -105,6 +105,7 @@ class Notify:
             if "assembly" in assignment.attendant.lower() or "convention" in assignment.attendant.lower():
                 continue
 
+            sent = False
             attendant = Session.DBSession.query(Attendant).filter(Attendant.fullname == assignment.attendant).first()
 
             # Insure attendant has notifications of some kind enabled
@@ -120,7 +121,7 @@ class Notify:
                     msg += f"\n\n\n{signature.message}"
 
                 # Send email notification
-                if (attendant.send_email == 1) and (not reminder or "email" in reminder.msg_type):
+                if (attendant.send_email == 1) and email_session and (not reminder or "email" in reminder.msg_type):
                     print(f'sending email notification for {assignment.assignment_type} on {meeting.date}')
                     with email_notification_lock:
                         try:
@@ -130,7 +131,7 @@ class Notify:
                             sent = False
 
                 # Send sms notification
-                if (attendant.send_sms == 1) and email_session and (not reminder or "text" in reminder.msg_type):
+                if (attendant.send_sms == 1) and (not reminder or "text" in reminder.msg_type):
                     print(f'sending text notification for {assignment.assignment_type} on {meeting.date}')
                     with sms_notification_lock:
                         try:
