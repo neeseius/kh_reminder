@@ -144,6 +144,7 @@ class Notify:
                     successfully_sent += 1
                 else:
                     not_sent +=1
+                    print(f'No alert sent for {assignment.assignment_type} on {meeting.date}')
 
             else:
                 not_sent += 1
@@ -153,13 +154,10 @@ class Notify:
 
         # Let admin know result
         if admin.phone:
-            msg = ( f'kh_reminder Summary'
+            msg = ( f'kh_reminder Summary\n'
                     f'Date: {meeting.date.strftime("%A %B %d")} {meeting.meeting_type}\n')
             if reminder:
-                msg += reminder.item_string + "\n"
-            msg += f"\nsuccessfully sent: {successfully_sent}\nnot sent: {not_sent}"
+                msg += f'reminder: {reminder.item_string}\n'
+            msg += f'\nsuccessfully sent: {successfully_sent}\nnot sent: {not_sent}'
             cls.send_text(number=admin.phone, text=msg)
-
-        else:
-            print(f'No alert sent for {assignment.assignment_type} on {meeting.date}')
 
