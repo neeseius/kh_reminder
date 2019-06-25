@@ -34,12 +34,11 @@ def admin_contact(request):
         if verify_email:
             try:
                 Notify.send_test_email(admin)
+                print(f"email setup verified")
                 admin.can_email = 1
-                response["can_email"] = 1
             except Exception as e:
+                print(f"email setup not verified: {str(e)})")
                 admin.can_email = 0
-                response["can_email"] = 0
-                print(e)
 
         Session.DBSession.commit()
 

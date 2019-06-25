@@ -121,7 +121,7 @@ class Notify:
                     msg += f"\n\n\n{signature.message}"
 
                 # Send email notification
-                if (attendant.send_email == 1) and email_session and (not reminder or "email" in reminder.msg_type):
+                if (attendant.send_email == 1) and attendant.email and email_session and (not reminder or "email" in reminder.msg_type):
                     print(f'sending email notification for {assignment.assignment_type} on {meeting.date}')
                     with email_notification_lock:
                         try:
@@ -131,7 +131,7 @@ class Notify:
                             sent = False
 
                 # Send sms notification
-                if (attendant.send_sms == 1) and (not reminder or "text" in reminder.msg_type):
+                if (attendant.send_sms == 1) and attendant.phone and (not reminder or "text" in reminder.msg_type):
                     print(f'sending text notification for {assignment.assignment_type} on {meeting.date}')
                     with sms_notification_lock:
                         try:

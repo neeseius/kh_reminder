@@ -28,6 +28,6 @@ def notify_api(request):
     elif "meeting_id" in data:
         meeting_id = data["meeting_id"]
         meeting = Session.DBSession.query(Meeting).filter(Meeting.id == meeting_id).one()
-        Notify.send_reminders(meeting)
+        Notify.send_reminders(meeting=meeting)
 
         return {"status": "reminders sent"}
